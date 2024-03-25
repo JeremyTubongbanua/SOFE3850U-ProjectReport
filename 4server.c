@@ -42,8 +42,6 @@ int main(int argc, char *argv[])
 
     printf("Server started.\n");
 
-    char buffer[101];
-    memset(buffer, 0, sizeof(char) * 101);
     pdu pdu;
 
     while(1) {
@@ -55,7 +53,7 @@ int main(int argc, char *argv[])
             // initiate file transfer
             FILE *fp = fopen(pdu.data, "r");
             if(fp == NULL) {
-                // send error PDU
+                // send error PDU ('E')
                 printf("Error opening file: %s\n", pdu.data);
                 populate_pdu(&pdu, 'E', "File not found");
                 send_pdu(sd, &pdu, &sin, 0);
@@ -63,7 +61,7 @@ int main(int argc, char *argv[])
             }
             printf("Successfully opened file: %s\n", pdu.data);
 
-            // begin sending file
+            // begin sending file ('D')
             char buffer[100];
             memset(buffer, 0, sizeof(char) * 100);
             while (fgets(buffer, 100, fp) != NULL) {
@@ -75,13 +73,13 @@ int main(int argc, char *argv[])
                     break;
                 }
                 memset(buffer, 0, sizeof(char) * 100);
+                sleep(1);
             }
-            // send final PDU
+
+            // send final PDU ('F')
             populate_pdu(&pdu, 'F', "File transfer complete");
             send_pdu(sd, &pdu, &sin, 0);
         }
-        // teardown
-        memset(buffer, 0, sizeof(char) * 101);
     }
 
     close(sd);

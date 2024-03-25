@@ -60,16 +60,6 @@ int main(int argc, char *argv[])
         printf("Sent filename to server\n");
     }
 
-    // receive if success
-    pdu response_pdu;
-    recv_pdu(sd, &response_pdu, &sin, 1);
-    if (response_pdu.type == 'E')
-    {
-        printf("Error: %s\n", response_pdu.data);
-        exit(1);
-    }
-    memset(&response_pdu, 0, sizeof(response_pdu));
-
     FILE *fp = fopen("client_received.txt", "w");
     if (fp == NULL)
     {
@@ -77,9 +67,12 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    pdu response_pdu;
+
     while (response_pdu.type != 'F' || response_pdu.type != 'E')
     {
         recv_pdu(sd, &response_pdu, &sin, 1);
+        printf("Received PDU: %c\n", response_pdu.type);
         switch (response_pdu.type)
         {
             case 'F':
